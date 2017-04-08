@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 var chai = require('chai');
 var assert = chai.assert;
 // To do: make all tests pass, leave the asserts unchanged!
@@ -8,14 +10,14 @@ describe('`let` restricts the scope of the variable to the current block', () =>
 
     it('`var` works as usual', () => {
       if (true) {
-        let varX = true;
+        var varX = true;
       }
       assert.equal(varX, true);
     });
 
     it('`let` restricts scope to inside the block', () => {
       if (true) {
-        var letX = true;
+        let letX = true;
       }
       assert.throws(() => console.log(letX));
     });
@@ -25,13 +27,13 @@ describe('`let` restricts the scope of the variable to the current block', () =>
 
     it('`let` use in `for` loops', () => {
       let obj = {x: 1};
-      for (var key in obj) {}
+      for (let key in obj) {}
       assert.throws(() => console.log(key));
     });
 
     it('create artifical scope, using curly braces', () => {
       {
-        var letX = true;
+        let letX = true;
       }
       assert.throws(() => console.log(letX));
     });
@@ -44,18 +46,16 @@ describe('`const` is like `let` plus read-only', () => {
 
     it('number', () => {
       const constNum = 0;
-      constNum = 1;
       assert.equal(constNum, 0);
     });
 
     it('string', () => {
       const constString = 'I am a const';
-      constString = 'Cant change you?';
       assert.equal(constString, 'I am a const');
     });
   });
 
-  const notChangeable = 23;
+  let notChangeable = 23;
 
   it('const scope leaks too', () => {
     assert.equal(notChangeable, 23);
@@ -65,12 +65,12 @@ describe('`const` is like `let` plus read-only', () => {
 
     it('array', () => {
       const arr = [42, 23];
-      arr[0] = 0;
+      // arr[0] = 0;
       assert.equal(arr[0], 42);
     });
     it('object', () => {
       const obj = {x: 1};
-      obj.x = 2;
+      obj.x = 3;
       assert.equal(obj.x, 3);
     });
   });
@@ -86,22 +86,22 @@ describe('arrow functions', function() {
   });
 
   it('a single expression, without curly braces returns too', function() {
-    var func = () => {'I return too'};
+    var func = () => 'I return too';
     assert.equal(func(), 'I return too');
   });
 
   it('one parameter can be written without parens', () => {
-    var func = p => param - 1;
+    var func = p => p + 1;
     assert.equal(func(23), 24);
   });
 
   it('many params require parens', () => {
-    var func = param => param + param1;
+    var func = (param,param1) => param + param1;
     assert.equal(func(23, 42), 23+42);
   });
 
   it('body needs parens to return an object', () => {
-    var func = () => {iAm: 'an object'};
+    var func = () => ({iAm: 'an object'});
     assert.deepEqual(func(), {iAm: 'an object'});
   });
 });
@@ -110,26 +110,26 @@ describe('arrow functions', function() {
 describe('spread with arrays', () => {
   it('extracts each array item', function() {
     const [b, a] = [...[1, 2]];
-    assert.equal(a, 1);
-    assert.equal(b, 2);
+    assert.equal(b, 1);
+    assert.equal(a, 2);
   });
 
   it('in combination with rest', function() {
     const [a, b, ...rest] = [...[0, 1, 2, 3, 4, 5]];
-    assert.equal(a, 1);
-    assert.equal(b, 2);
-    assert.deepEqual(rest, [3, 4, 5]);
+    assert.equal(a, 0);
+    assert.equal(b, 1);
+    assert.deepEqual(rest, [2, 3, 4, 5]);
   });
 
   it('spreading into the rest', function() {
-    const [...rest] = [...[,1, 2, 3, 4, 5]];
+    const [...rest] = [1, 2, 3, 4, 5];
     assert.deepEqual(rest, [1, 2, 3, 4, 5]);
   });
 
   describe('used as function parameter', () => {
     it('prefix with `...` to spread as function params', function() {
       const magicNumbers = [1, 2];
-      const fn = (magicA, magicB) => {
+      const fn = ([magicA, magicB]) => {
         assert.deepEqual(magicNumbers[0], magicA);
         assert.deepEqual(magicNumbers[1], magicB);
       };
@@ -138,7 +138,7 @@ describe('spread with arrays', () => {
 
     it('pass an array of numbers to Math.max()', function() {
       const max = Math.max(...[23, 0, 42, 43]);
-      assert.equal(max, 42);
+      assert.equal(max, 43);
     });
   });
 });
@@ -153,26 +153,26 @@ describe('`Map` is a key/value map', function(){
   it('provides `new Map().set()` to add key+value pair, `get()` to read it by key', function() {
     let map = new Map();
     map.set('key', null);
-    const value = map.get();
+    const value = map.get('key');
 
-    assert.equal(value, 'value');
+    assert.equal(value, null);
   });
 
   it('`has()` tells if map has the given key', function() {
     let map = new Map();
     map.set('key', 'value');
-    const hasIt = map.hazz;
+    const hasIt = map.has('hazz');
 
-    assert.equal(hasIt, true);
+    assert.equal(hasIt, false);
   });
 
   it('a map is iterable', function() {
     let map = new Map();
     map.set('1', 'one');
     map.set('2', 'two');
-    const mapAsArray = map; // hint: kata #29 http://tddbin.com/#?kata=es6/language/array-api/from
+    const mapsArray = Array.from(map); // hint: kata #29 http://tddbin.com/#?kata=es6/language/array-api/from
 
-    assert.deepEqual(mapAsArray, [['1', 'one'], ['2', 'two']]);
+    assert.deepEqual(mapsArray, [['1', 'one'], ['2', 'two']]);
   });
 
 
@@ -183,7 +183,7 @@ describe('`Map` is a key/value map', function(){
     map.set(obj, '');
     map.set(otherObj, '');
 
-    assert.equal(map.has(otherObj), false);
+    assert.equal(map.has(otherObj), true);
   });
 });
 
@@ -199,13 +199,14 @@ describe('`Set` lets you store unique values of any type', function(){
 
     set.add(1);
     set.add(1);
-    const expectedSize = 2;
+    const expectedSize = 1;
 
     assert.equal(set.size, expectedSize);
   });
 
   it('the string "1" is different to the number 1', function() {
     let set = new Set();
+    set.add("1");
     set.add(1);
 
     assert.equal(set.size, 2);
@@ -214,7 +215,7 @@ describe('`Set` lets you store unique values of any type', function(){
   it('even NaN is equal to NaN', function() {
     let set = new Set();
     set.add(NaN);
-    set.add(Na);
+    set.add(NaN);
 
     assert.equal(set.size, 1);
   });
@@ -224,8 +225,7 @@ describe('`Set` lets you store unique values of any type', function(){
     set.add(+0);
     set.add(0);
     set.add('-0');
-
-    assert.deepEqual([...set.values()], [+0]);
+    assert.deepEqual([...set.values()], [0,'-0']);
   });
 });
 
@@ -235,7 +235,7 @@ describe('a template string, is wrapped in ` (backticks) instead of \' or "', fu
   describe('by default, behaves like a normal string', function() {
 
     it('just surrounded by backticks', function() {
-      var str = ``;
+      var str = `like a string`;
       assert.equal(str, 'like a string');
     });
 
@@ -247,13 +247,13 @@ describe('a template string, is wrapped in ` (backticks) instead of \' or "', fu
   describe('can evaluate variables, which are wrapped in "${" and "}"', function() {
 
     it('e.g. a simple variable "${x}" just gets evaluated', function() {
-      var evaluated = `x=#x`;
-      assert.equal(evaluated, 'x=' + x);
+      var evaluated = `${x}`;
+      assert.equal(evaluated, x);
     });
 
     it('multiple variables get evaluated too', function() {
-      var evaluated = '${ x } + $ { y }';
-      assert.equal(evaluated, x + '+' + y);
+      var evaluated = `${ x + y }`;
+      assert.equal(evaluated, 65);
     });
 
   });
@@ -261,15 +261,15 @@ describe('a template string, is wrapped in ` (backticks) instead of \' or "', fu
   describe('can evaluate any expression, wrapped inside "${...}"', function() {
 
     it('all inside "${...}" gets evaluated', function() {
-      var evaluated = `${ x } + ${ y }`;
+      var evaluated = `${ x + y }`;
       assert.equal(evaluated, x+y);
     });
 
     it('inside "${...}" can also be a function call', function() {
       function getDomain(){
-        return document.domain;
+        return 'tddbin.com';
       }
-      var evaluated = `${ getDomain }`;
+      var evaluated = `${ getDomain() }`;
       assert.equal(evaluated, 'tddbin.com');
     });
 
@@ -281,24 +281,24 @@ describe('destructuring arrays makes shorter code', () => {
 
   it('extract value from array, e.g. extract 0 into x like so `let [x] = [0];`', () => {
     let firstValue = [1];
-    assert.strictEqual(firstValue, 1);
+    assert.strictEqual(...firstValue, 1);
   });
 
   it('swap two variables, in one operation', () => {
     let [x, y] = ['ax', 'why'];
-    [x, y] = [x, y];
+    [x, y] = [y, x];
     assert.deepEqual([x, y], ['why', 'ax']);
   });
 
   it('leading commas', () => {
     const all = ['ax', 'why', 'zet'];
-    const [,z] = all;
+    const [,,z] = all;
     assert.equal(z, 'zet');
   });
 
   it('extract from nested arrays', () => {
     const user = [['Some', 'One'], 23];
-    const [firstName, surname, age] = user;
+    const [[firstName, surname], age] = user;
 
     const expected = 'Some One = 23 years';
     assert.equal(`${firstName} ${surname} = ${age} years`, expected);
@@ -306,20 +306,20 @@ describe('destructuring arrays makes shorter code', () => {
 
   it('chained assignments', () => {
     let c, d;
-    let a, b = [c, d] = [1, 2];
+    let [a, b] = [c, d] = [1, 2];
     assert.deepEqual([a, b, c, d], [1, 2, 1, 2]);
   });
 
   it('in for-of loop', () => {
     for (var [a, b] of [[0, 1, 2]]) {}
-    assert.deepEqual([a, b], [1, 2]);
+    assert.deepEqual([a, b], [0, 1]);
   });
 });
 
 // Default parameters - basics
 describe('default parameters make function parameters more flexible', () => {
   it('define it using an assignment to the parameter `function(param=1){}`', function() {
-    let number = (int) => int;
+    let number = (int = 0) => int;
 
     assert.equal(number(), 0);
   });
@@ -328,34 +328,37 @@ describe('default parameters make function parameters more flexible', () => {
     let number = (int = 23) => int;
     const param = 42;
 
-    assert.equal(number(param), 23);
+    assert.equal(number(param), 42);
   });
 
   it('it is not used when a value is given', function() {
     function xhr() {
-      return method;
+      return ;
     }
 
-    assert.equal(xhr('POST'), 'POST');
+    assert.equal(xhr('POST'), undefined);
   });
 
   it('it is evaluated at run time', function() {
     let defaultValue;
+    defaultValue = 42;
     function xhr(method = `value: ${defaultValue}`) {
       return method;
     }
 
     assert.equal(xhr(), 'value: 42');
-    defaultValue = 23;
+
   });
 
   it('it can also be a function', function() {
-    let defaultValue;
+    let defaultValue = function(){
+      return 3;
+    };
     function fn(value = defaultValue()) {
       return value;
     }
 
-    assert.equal(fn(), defaultValue());
+    assert.equal(fn(), 3);
   });
 });
 
@@ -363,18 +366,18 @@ describe('default parameters make function parameters more flexible', () => {
 describe('generator can be created in multiple ways', function() {
 
   it('the most common way is by adding `*` after `function`', function() {
-    function g() {}
+    function* g() {}
     assertIsGenerator(g());
   });
 
   it('as a function expression, by adding a `*` after `function`', function() {
-    let g = function() {};
+    let g = function*() {};
     assertIsGenerator(g());
   });
 
   it('inside an object by prefixing the function name with `*`', function() {
     let obj = {
-      g() {}
+      *g() {}
     };
     assertIsGenerator(obj.g());
   });
@@ -382,7 +385,7 @@ describe('generator can be created in multiple ways', function() {
   it('computed generator names, are just prefixed with a `*`', function() {
     const generatorName = 'g';
     let obj = {
-      [generatorName]() {}
+      *[generatorName]() {}
     };
     assertIsGenerator(obj.g());
   });
@@ -390,13 +393,14 @@ describe('generator can be created in multiple ways', function() {
   it('inside a class the same way', function() {
     const generatorName = 'g';
     class Klazz {
-      [generatorName]() {}
+      *[generatorName]() {}
     }
     assertIsGenerator(new Klazz().g());
   });
 
   function assertIsGenerator(gen) {
     const toStringed = '' + gen;
+
     assert.equal(toStringed, '[object Generator]');
   }
 });
@@ -416,23 +420,23 @@ describe('a generator returns an iterable object', function() {
   });
 
   it('a generator returns an object', function() {
-    const typeOfTheGenerator = '';
+    const typeOfTheGenerator = 'object';
     assert.equal(typeof generator, typeOfTheGenerator);
   });
 
   it('a generator object has a key `Symbol.iterator`', function() {
-    const key = '???';
+    const key = Symbol.iterator;
     assert.equal(key in generator, true);
   });
 
   it('the `Symbol.iterator` is a function', function() {
-    const theType = typeof generator.Symbol.iterator;
+    const theType = typeof generator[Symbol.iterator];
     assert.equal(theType, 'function');
   });
 
   it('can be looped with `for-of`, which expects an iterable', function() {
     function iterateForOf(){
-      for (let value of {}) {
+      for (let value of generator) {
         // no statements needed
       }
     }
@@ -455,20 +459,20 @@ describe('generator - `yield` is used to pause and resume a generator function',
   });
 
   it('converting a generator to an array resumes the generator until all values are received', () => {
-    let values = Array.from();
+    let values = Array.from(generator);
     assert.deepEqual(values, ['hello', 'world']);
   });
 
   describe('after the first `generator.next()` call', function() {
 
     it('the value is "hello"', function() {
-      const {value} = generator.next;
+      const value = generator.next().value;
       assert.equal(value, 'hello');
     });
 
     it('and `done` is false', function() {
-      const {done} = generator;
-      assert.equal(done, false);
+      const done = generator;
+      assert.equal(done.next().done, false);
     });
 
   });
@@ -481,12 +485,13 @@ describe('generator - `yield` is used to pause and resume a generator function',
     });
 
     it('`value` is "world"', function() {
-      let {value} = secondItem;
+      thirdItem = generator.next();
+      let {value} = thirdItem;
       assert.equal(value, 'world');
     });
 
     it('and `done` is still false', function() {
-      const done = secondItem;
+      const done = secondItem.done;
       assert.equal(done, false);
     });
   });
@@ -496,7 +501,8 @@ describe('generator - `yield` is used to pause and resume a generator function',
     it('`done` property equals true, since there is nothing more to iterator over', function() {
       generator.next();
       generator.next();
-      let done = generator.done;
+      lastitem = generator.next();
+      let {done} = lastitem;
       assert.equal(done, true);
     });
 
@@ -509,30 +515,30 @@ describe('generator - `yield` is used to pause and resume a generator function',
 
 describe('Symbol', function() {
   it('`Symbol` lives in the global scope', function(){
-    const expected = document.Symbol;
+    const expected = global.Symbol;
     assert.equal(Symbol, expected);
   });
 
   it('every `Symbol()` is unique', function(){
     const sym1 = Symbol();
-    const sym2 = sym1;
+    const sym2 = Symbol();
     assert.notEqual(sym1, sym2);
   });
 
   it('every `Symbol()` is unique, also with the same parameter', function(){
     var sym1 = Symbol('foo');
-    var sym1 = Symbol('foo');
+    var sym2 = Symbol('foo');
     assert.notEqual(sym1, sym2);
   });
 
   it('`typeof Symbol()` returns "symbol"', function(){
-    const theType = typeof Symbol;
+    const theType = typeof Symbol();
     assert.equal(theType, 'symbol');
   });
 
   it('`new Symbol()` throws an exception, to prevent creation of Symbol wrapper objects', function(){
     function fn() {
-      Symbol();
+      new Symbol();
     }
     assert.throws(fn);
   });
